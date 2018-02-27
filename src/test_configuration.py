@@ -30,6 +30,11 @@ UEFA:France,Germany,Italy,England,Russia''')
         self.assertListEqual(list(configuration.teams.values())[0], ['Brazil', 'Argentina'])
         self.assertListEqual(list(configuration.teams.values())[2], ['France', 'Germany', 'Italy', 'England', 'Russia'])
 
+    def test_dump_none(self):
+        solutions = {'team1': 1, 'team2': 2, 'team3': 3}
+        print(solution_generator(solutions, 4))
+        self.assertEqual('Yes\nteam1\nteam2\nteam3\nNone', solution_generator(solutions, 4))
+
     def test_small(self):
         configuration = Configuration(
             '''3
@@ -58,7 +63,7 @@ UEFA:France,Germany,Italy,England,Russia''')
         if solution is not None:
             for team_name, group in solution.iteritems():
                 output[group].append(team_name)
-        print(solution_generator(solution))
+        print(solution_generator(solution, configuration.group))
 
     def test_big_no_result(self):
         configuration = Configuration(
@@ -150,7 +155,7 @@ OFC:None''')
         if solution is not None:
             for team_name, group in solution.iteritems():
                 output[group].append(team_name)
-        print(solution_generator(solution))
+        print(solution_generator(solution, configuration.group))
 
     def test_case2(self):
         configuration = Configuration(
@@ -179,4 +184,58 @@ OFC:None''')
         if solution is not None:
             for team_name, group in solution.iteritems():
                 output[group].append(team_name)
-        print(solution_generator(solution))
+        print(solution_generator(solution, configuration.group))
+
+    def test_huge(self):
+        configuration = Configuration(
+            '''27
+25
+AHL,WSS,SGB
+ZCD,QMQ,AAQ,PLR,VDM
+GOL,PXW,FIP
+HRJ,YVF
+JFV,SDQ
+IQG,IHZ,LEN,PKP
+QBF,XAO,LFS,GAH
+WKL,LVD,JQE,NDT,QZK,REW,HJN
+KLV,ROP,NXT,IEV,KRI,YRA,BUS,KCW
+TBY,RPW,CPP
+RMP,PGU
+FSW,DGY,FRY,ADH,AOD
+ZLX,GTE
+ITJ,KDP,GPM,SFB,YIS
+DXU,WBM,UVT,TAN,BSN,SMS,AIL
+QNY,JQH,XCZ
+PVW,BDD,FRE,VTB,CTZ,JJE,NIY,LKR,HHC
+EUE,TNN,PSL
+QZS,GGQ,ZUR,JXZ,RPJ
+FIV,OFZ,RWF,WIB,BJS,UDP,DWE
+HNH,GMA,ASE,ZTQ,LIS,XYE,JFP,WWR,XZJ
+LPD,DVC,LYV,LXK
+IND,YJW,GUO,SQI,ZLU,LZA
+TIT,RGM,DED,BSK,KIP
+AXU,FAG,EES,BEP,YWM,KJK,ZYO,TAD,PYO
+AFC:EES,QNY,YJW,FSW,RPW,UVT,SQI,ZUR,VTB,TIT,BEP,LPD,SMS,LFS,ZLU,LEN,RPJ,LZA
+CAF:IND,GOL,GPM,WBM,LIS,PXW,BSN,BJS,YWM,YRA,JQH,DVC,LYV,ADH,PLR,SGB,FIP,LXK
+OFC:KLV,ZCD,ASE,KDP,QZS,RMP,TAN,JQE,NXT,WSS,IEV,JFP,DGY,BSK,KCW,CPP,HHC
+CONCACAF:FIV,DXU,GMA,QMQ,EUE,OFZ,ZLX,ZTQ,AAQ,GUO,RWF,AHL,FRE,NDT,JJE,WWR,DED,SFB,VDM,YVF,GAH,PGU,AOD
+CONMEBOL:AXU,PVW,IQG,HRJ,BDD,XAO,IHZ,XYE,QZK,KRI,KJK,BUS,NIY,FRY,REW,ZYO,LKR,TAD,HJN,GTE,YIS,PSL,DWE
+UEFA:HNH,FAG,TBY,ITJ,QBF,WKL,LVD,ROP,WIB,GGQ,TNN,CTZ,UDP,JFV,RGM,JXZ,SDQ,PKP,AIL,XCZ,XZJ,KIP,PYO''')
+        minConflictSolver = MinConflictSolver()
+        for pot in configuration.pots.values():
+            minConflictSolver.add_variable(pot, range(0, configuration.group))
+            minConflictSolver.add_constraint(AllDifferentConstraint(), pot)
+        for team_name, teams in configuration.teams.iteritems():
+            if team_name == 'UEFA':
+                minConflictSolver.add_constraint(AtMostTwoConstraint(), teams)
+            else:
+                minConflictSolver.add_constraint(AllDifferentConstraint(), teams)
+        for _ in range(100):
+            solution = minConflictSolver.get_solution()
+            if solution is not None:
+                break
+        output = defaultdict(list)
+        if solution is not None:
+            for team_name, group in solution.iteritems():
+                output[group].append(team_name)
+        print(solution_generator(solution, configuration.group))

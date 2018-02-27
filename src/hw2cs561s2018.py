@@ -44,7 +44,7 @@ class MinConflictSolver:
         # for var in variables:
         self.constraints.append((constraint, variables))
 
-    def get_solution(self, max_step=10000):
+    def get_solution(self, max_step=1000):
         # recording the constraint and all related variables for this variable
         for variables in self.domains:
             self.vconstraints[variables] = []
@@ -117,7 +117,7 @@ class AtMostTwoConstraint:
         return True
 
 
-def solution_generator(solution):
+def solution_generator(solution, group_num):
     if solution is None:
         return 'No'
     else:
@@ -127,11 +127,14 @@ def solution_generator(solution):
             output[group].append(team_name)
         for group in output:
             result += ",".join(output[group]) + '\n'
-        return result
+        remaining_group = group_num - len(output)
+        for _ in range(remaining_group):
+            result += "None\n"
+        return result.rstrip()
 
 
 def main():
-    with open("input.txt") as f:
+    with open("input3.txt") as f:
         file_lines = f.read()
         configuration = Configuration(file_lines)
     minConflictSolver = MinConflictSolver()
@@ -144,8 +147,8 @@ def main():
         else:
             minConflictSolver.add_constraint(AllDifferentConstraint(), teams)
     solution = minConflictSolver.get_solution()
-    with open("output.txt", 'w') as the_file:
-        the_file.write(solution_generator(solution))
+    with open("output3.txt", 'w') as the_file:
+        the_file.write(solution_generator(solution, configuration.group))
 
 
 if __name__ == "__main__":
