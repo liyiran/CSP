@@ -1,0 +1,11 @@
+2
+3
+Russia,Brazil,Argentina
+Germany,Italy,England
+France,Mexico
+AFC:None
+CAF:None
+CONCACAF:Mexico
+CONMEBOL:Brazil,Argentina
+UEFA:France,Germany,Italy,England,Russia
+OFC:None

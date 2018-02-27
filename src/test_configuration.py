@@ -1,7 +1,7 @@
 from collections import defaultdict
 from unittest import TestCase
 
-from main import AllDifferentConstraint, AtMostTwoConstraint, Configuration, MinConflictSolver
+from hw2cs561s2018 import AllDifferentConstraint, AtMostTwoConstraint, Configuration, MinConflictSolver, solution_generator
 
 
 class TestConfiguration(TestCase):
@@ -58,7 +58,7 @@ UEFA:France,Germany,Italy,England,Russia''')
         if solution is not None:
             for team_name, group in solution.iteritems():
                 output[group].append(team_name)
-        print(output)
+        print(solution_generator(solution))
 
     def test_big_no_result(self):
         configuration = Configuration(
@@ -121,3 +121,62 @@ OFC:None''')
             for team_name, group in solution.iteritems():
                 output[group].append(team_name)
         print(output)
+
+    def test_case3(self):
+        configuration = Configuration(
+            '''8
+4
+Russia,Germany,Brazil,Portugal,Argentina,Belgium,Poland,France
+Spain,Peru,Switzerland,England,Colombia,Mexico,Uruguay,Croatia
+Denmark,Iceland,Costa Rica,Sweden,Tunisia,Egypt,Senegal,Iran
+Serbia,Nigeria,Australia,Japan,Morocco,Panama,South Korea,Saudi Arabia
+AFC:South Korea,Saudi Arabia,Iran,Japan,Australia
+CAF:Tunisia,Egypt,Senegal,Morocco,Nigeria
+CONCACAF:Mexico,Panama,Costa Rica
+CONMEBOL:Brazil,Argentina,Uruguay,Colombia,Peru
+UEFA:France,Germany,England,Russia,Portugal,Belgium,Poland,Switzerland,Croatia,Denmark,Iceland,Serbia,Spain,Sweden
+OFC:None''')
+        minConflictSolver = MinConflictSolver()
+        for pot in configuration.pots.values():
+            minConflictSolver.add_variable(pot, range(0, configuration.group))
+            minConflictSolver.add_constraint(AllDifferentConstraint(), pot)
+        for team_name, teams in configuration.teams.iteritems():
+            if team_name == 'UEFA':
+                minConflictSolver.add_constraint(AtMostTwoConstraint(), teams)
+            else:
+                minConflictSolver.add_constraint(AllDifferentConstraint(), teams)
+        solution = minConflictSolver.get_solution()
+        output = defaultdict(list)
+        if solution is not None:
+            for team_name, group in solution.iteritems():
+                output[group].append(team_name)
+        print(solution_generator(solution))
+
+    def test_case2(self):
+        configuration = Configuration(
+            '''2
+3
+Russia,Brazil,Argentina
+Germany,Italy,England
+France,Mexico
+AFC:None
+CAF:None
+CONCACAF:Mexico
+CONMEBOL:Brazil,Argentina
+UEFA:France,Germany,Italy,England,Russia
+OFC:None''')
+        minConflictSolver = MinConflictSolver()
+        for pot in configuration.pots.values():
+            minConflictSolver.add_variable(pot, range(0, configuration.group))
+            minConflictSolver.add_constraint(AllDifferentConstraint(), pot)
+        for team_name, teams in configuration.teams.iteritems():
+            if team_name == 'UEFA':
+                minConflictSolver.add_constraint(AtMostTwoConstraint(), teams)
+            else:
+                minConflictSolver.add_constraint(AllDifferentConstraint(), teams)
+        solution = minConflictSolver.get_solution()
+        output = defaultdict(list)
+        if solution is not None:
+            for team_name, group in solution.iteritems():
+                output[group].append(team_name)
+        print(solution_generator(solution))

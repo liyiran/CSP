@@ -1,4 +1,5 @@
 import random
+from collections import defaultdict
 
 
 class Configuration:
@@ -43,7 +44,7 @@ class MinConflictSolver:
         # for var in variables:
         self.constraints.append((constraint, variables))
 
-    def get_solution(self, max_step=1000):
+    def get_solution(self, max_step=10000):
         # recording the constraint and all related variables for this variable
         for variables in self.domains:
             self.vconstraints[variables] = []
@@ -114,3 +115,38 @@ class AtMostTwoConstraint:
                 else:
                     return False
         return True
+
+
+def solution_generator(solution):
+    if solution is None:
+        return 'No'
+    else:
+        result = "Yes\n"
+        output = defaultdict(list)
+        for team_name, group in solution.iteritems():
+            output[group].append(team_name)
+        for group in output:
+            result += ",".join(output[group]) + '\n'
+        return result
+
+
+def main():
+    with open("input.txt") as f:
+        file_lines = f.read()
+        configuration = Configuration(file_lines)
+    minConflictSolver = MinConflictSolver()
+    for pot in configuration.pots.values():
+        minConflictSolver.add_variable(pot, range(0, configuration.group))
+        minConflictSolver.add_constraint(AllDifferentConstraint(), pot)
+    for team_name, teams in configuration.teams.iteritems():
+        if team_name == 'UEFA':
+            minConflictSolver.add_constraint(AtMostTwoConstraint(), teams)
+        else:
+            minConflictSolver.add_constraint(AllDifferentConstraint(), teams)
+    solution = minConflictSolver.get_solution()
+    with open("output.txt", 'w') as the_file:
+        the_file.write(solution_generator(solution))
+
+
+if __name__ == "__main__":
+    main()
