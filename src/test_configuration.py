@@ -234,6 +234,7 @@ UEFA:HNH,FAG,TBY,ITJ,QBF,WKL,LVD,ROP,WIB,GGQ,TNN,CTZ,UDP,JFV,RGM,JXZ,SDQ,PKP,AIL
             solution = minConflictSolver.get_solution()
             if solution is not None:
                 break
+            print("restart======")
         output = defaultdict(list)
         if solution is not None:
             for team_name, group in solution.iteritems():

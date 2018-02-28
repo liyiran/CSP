@@ -55,6 +55,7 @@ class MinConflictSolver:
         for var in self.domains:
             # random initialize variable
             assignment[var] = random.choice(self.domains[var])
+        # print(assignment)
         for _ in range(max_step):
             conflicted = False
             var_list = self.domains.keys()
@@ -69,6 +70,7 @@ class MinConflictSolver:
                     continue  # move to the next variable
                 # resolve conflict
                 min_count = len(self.vconstraints[var])  # at most len(self.vconstraints[var]) conflicts
+                print(min_count)
                 values = []  # least conflict assignment condidates
                 for value in self.domains[var]:
                     # all possible assignments
@@ -83,7 +85,9 @@ class MinConflictSolver:
                         # less conflicts
                         min_count = counter
                         values = [value]
+                    # print(min_count)
                 assignment[var] = random.choice(values)  # randomly choose a value
+                print(assignment, min_count)
                 conflicted = True
             if not conflicted:
                 return assignment
@@ -92,14 +96,15 @@ class MinConflictSolver:
 
 class AllDifferentConstraint(object):
     def __call__(self, variables, domains, assignments):
-        found = []
+        found = {}
         for var in variables:
             value = assignments.get(var)
             if value is not None:
                 if value in found:
-                    return False
-                found.append(value)
-        return True
+                    found[value] += 1
+                else:
+                    found[value] = 0
+        return sum(found.values())
 
 
 class AtMostTwoConstraint:
@@ -109,12 +114,10 @@ class AtMostTwoConstraint:
             value = assignments.get(var, None)
             if value is not None:
                 if not value in map:
-                    map[value] = 1
-                elif map[value] == 1:
-                    map[value] = 2
+                    map[value] = -1
                 else:
-                    return False
-        return True
+                    map[value] += 1
+        return sum(x for x in map.values() if x > 0)
 
 
 def solution_generator(solution, group_num):
