@@ -1,4 +1,5 @@
 import random
+import sys
 from collections import defaultdict
 
 
@@ -63,22 +64,23 @@ class MinConflictSolver:
                 # find conflict
                 for constraint, variables in self.vconstraints[var]:
                     # find all related constraints and all variables that related to this constraint
-                    if not constraint(variables, self.domains, assignment):
+                    if 0 != constraint(variables, self.domains, assignment):
                         # a conflict for this variable assignment, resolve it
                         break
                 else:
                     continue  # move to the next variable
                 # resolve conflict
-                min_count = len(self.vconstraints[var])  # at most len(self.vconstraints[var]) conflicts
-                print(min_count)
+                min_count = sys.maxint  # at most len(self.vconstraints[var]) conflicts
+                # print(min_count)
                 values = []  # least conflict assignment condidates
                 for value in self.domains[var]:
                     # all possible assignments
                     assignment[var] = value  # assignment the value 
                     counter = 0
                     for constraint, variables in self.vconstraints[var]:
-                        if not constraint(variables, self.domains, assignment):
-                            counter += 1  # one conflict
+                        violated = constraint(variables, self.domains, assignment)
+                        if violated != 0:
+                            counter += violated  # one conflict
                     if counter == min_count:
                         values.append(value)
                     elif counter < min_count:
@@ -87,7 +89,7 @@ class MinConflictSolver:
                         values = [value]
                     # print(min_count)
                 assignment[var] = random.choice(values)  # randomly choose a value
-                print(assignment, min_count)
+                # print(assignment, min_count)
                 conflicted = True
             if not conflicted:
                 return assignment

@@ -64,6 +64,7 @@ UEFA:France,Germany,Italy,England,Russia''')
             for team_name, group in solution.iteritems():
                 output[group].append(team_name)
         print(solution_generator(solution, configuration.group))
+        result_tester(configuration, solution)
 
     def test_big_no_result(self):
         configuration = Configuration(
@@ -125,7 +126,8 @@ OFC:None''')
         if solution is not None:
             for team_name, group in solution.iteritems():
                 output[group].append(team_name)
-        print(output)
+        print(solution_generator(solution, configuration.group))
+        result_tester(configuration, solution)
 
     def test_case3(self):
         configuration = Configuration(
@@ -156,8 +158,9 @@ OFC:None''')
             for team_name, group in solution.iteritems():
                 output[group].append(team_name)
         print(solution_generator(solution, configuration.group))
+        result_tester(configuration, solution)
 
-    def test_case2(self):
+    def test_case2_no(self):
         configuration = Configuration(
             '''2
 3
@@ -240,3 +243,83 @@ UEFA:HNH,FAG,TBY,ITJ,QBF,WKL,LVD,ROP,WIB,GGQ,TNN,CTZ,UDP,JFV,RGM,JXZ,SDQ,PKP,AIL
             for team_name, group in solution.iteritems():
                 output[group].append(team_name)
         print(solution_generator(solution, configuration.group))
+        result_tester(configuration, solution)
+
+    def test_huge2(self):
+        configuration = Configuration(
+            '''27
+23
+YCP
+XWX,ZON,CAL,LSA
+JGJ,TFS,EDS,MXK
+UHK,GZG,CGA,HOX,RIQ
+RKV,TGN,WSP,ISR
+FCZ,TRU,OTL,VNZ,MQQ
+WLB,SYJ,EON,NGZ,WUA
+DKQ,HCZ,HYE
+HHQ,HGD,DXG,KLS,PVN,IUY,VLN
+XMX,ONA,NNT,ICF,RXP,LHV,QII
+SCD,PZM,EUY
+NGE,UDT,IIO,HYH,ZLD,IBZ,WIL
+GPP,TCF,VLD,YZA,PIL,VNN,JVN
+NBW,XRC,GMW,ZPO,RNV
+QIR,POA,EEU,EHT
+QOB,BHS,RPN
+MDS,WQH,EQR,QQN,YPS
+TEW,XJF,QMR,FNV,ONP,OOW,LRX
+LEJ,QXD,PBT,ZCK,EBY,YOS
+BMQ,TJU
+JRK,UFL,YXB,HOD,DDH,KSW,AXT,SIG,EWT
+JHQ,LZK,UFG
+NXC,IQJ,JJU,AAD,DRM,XZQ,SQO,MUW
+AFC:NBW,NXC,FCZ,ZON,ICF,CAL,IUY,VNN,KSW,NGZ,AXT,HCZ,EHT
+CAF:XWX,TEW,UFL,XRC,FNV,IQJ,QOB,HOD,ZLD,LHV,IBZ,EON,HOX,QQN,DKQ,XZQ,ZCK,EUY,LRX,YOS,UFG,MUW
+OFC:HHQ,SCD,XJF,NGE,NNT,MDS,GMW,PVN,ZPO,PIL,SYJ,MXK,ISR,WUA,HYE,WIL,RNV,YPS
+CONCACAF:JGJ,OTL,QMR,KLS,LEJ,LZK,UDT,YXB,QXD,EQR,SIG,YCP,QII,EWT
+CONMEBOL:JHQ,WLB,XMX,JRK,HGD,TRU,GPP,TCF,RKV,VNZ,IIO,UHK,YZA,BMQ,CGA,AAD,POA,DDH,EBY,LSA,MQQ
+UEFA:ONA,RXP,DXG,WQH,QIR,PZM,VLD,GZG,HYH,TFS,BHS,JJU,ONP,PBT,DRM,EDS,SQO,TGN,OOW,EEU,WSP,RIQ,VLN,JVN,RPN,TJU''')
+        minConflictSolver = MinConflictSolver()
+        for pot in configuration.pots.values():
+            minConflictSolver.add_variable(pot, range(0, configuration.group))
+            minConflictSolver.add_constraint(AllDifferentConstraint(), pot)
+        for team_name, teams in configuration.teams.iteritems():
+            if team_name == 'UEFA':
+                minConflictSolver.add_constraint(AtMostTwoConstraint(), teams)
+            else:
+                minConflictSolver.add_constraint(AllDifferentConstraint(), teams)
+        for _ in range(100):
+            solution = minConflictSolver.get_solution()
+            if solution is not None:
+                break
+            print("restart======")
+        output = defaultdict(list)
+        if solution is not None:
+            for team_name, group in solution.iteritems():
+                output[group].append(team_name)
+        print(solution_generator(solution, configuration.group))
+        result_tester(configuration, solution)
+
+
+def result_tester(configuration, solution):
+    pot_reverse = {}
+    for pot in configuration.pots:
+        # if pot in configuration.pots:
+        for team in configuration.pots[pot]:
+            pot_reverse[team] = pot
+    division_reverse = {}
+    for division in configuration.teams:
+        for team in configuration.teams[division]:
+            division_reverse[team] = division
+    output = defaultdict(list)
+    for team_name, group in solution.iteritems():
+        output[group].append(team_name)
+    for _, teams in output.iteritems():
+        team_pot = map(lambda x: pot_reverse[x], teams)
+        assert len(set(team_pot)) == len(teams)
+        divisions = map(lambda x: division_reverse[x], teams)
+        assert divisions.count("AFC") <= 1
+        assert divisions.count("CAF") <= 1
+        assert divisions.count("OFC") <= 1
+        assert divisions.count("CONCACAF") <= 1
+        assert divisions.count("CONMEBOL") <= 1
+        assert divisions.count("UEFA") <= 2
