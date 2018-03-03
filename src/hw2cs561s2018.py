@@ -171,7 +171,7 @@ def solution_generator(solution, group_num):
 
 
 def main():
-    with open("input.txt") as f:
+    with open("input6.txt") as f:
         file_lines = f.read()
         configuration = Configuration(file_lines)
     min_conflict_solver = MinConflictSolver()
@@ -184,10 +184,13 @@ def main():
         else:
             min_conflict_solver.add_constraint(AllDifferentConstraint(), teams)
     solution = None
-    while solution is None:
+    i = 0
+    while solution is None and i <= 10:
+        i += 1
         solution = min_conflict_solver.get_solution()
-        with open("output.txt", 'w') as the_file:
+        with open("output6.txt", 'w') as the_file:
             the_file.write(solution_generator(solution, configuration.group))
+        print("restart")
 
 
 if __name__ == "__main__":
