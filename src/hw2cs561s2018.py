@@ -13,7 +13,7 @@ class Configuration:
             self.teams = {}
             for pot_num in range(self.pot):
                 pot_division = configs[pot_num + 2].split(',')
-                self.pots[pot_num] = pot_division  # devisions Russia,Brazil,Argentina
+                self.pots[pot_num] = pot_division  # divisions Russia,Brazil,Argentina
             for team in range(6):
                 team_name = configs[2 + self.pot + team].split(':')[0]
                 team_string = configs[2 + self.pot + team].split(':')[1]
@@ -70,9 +70,9 @@ class MinConflictSolver:
 
     def add_constraint(self, constraint, variables):
         """
-        :param constraint: constraint like AllDifferent 
+        :param constraint: constraint like AllDifferent
         :param variables: list like [a,b,c]
-        :return: 
+        :return:
         """
         # for var in variables:
         self.constraints.append((constraint, variables))
@@ -107,7 +107,7 @@ class MinConflictSolver:
                 values = []  # least conflict assignment condidates
                 for value in self.domains[var]:
                     # all possible assignments
-                    assignment[var] = value  # assignment the value 
+                    assignment[var] = value  # assignment the value
                     counter = 0
                     for constraint, variables in self.vconstraints[var]:
                         violated = constraint(variables, self.domains, assignment)
@@ -141,17 +141,17 @@ class AllDifferentConstraint(object):
         return sum(found.values())
 
 
-class AtMostTwoConstraint:
+class AtMostTwoConstraint(object):
     def __call__(self, variables, domains, assignments):
-        map = {}
+        assignment_map = {}
         for var in variables:
             value = assignments.get(var, None)
             if value is not None:
-                if not value in map:
-                    map[value] = -1
+                if value not in assignment_map:
+                    assignment_map[value] = -1
                 else:
-                    map[value] += 1
-        return sum(x for x in map.values() if x > 0)
+                    assignment_map[value] += 1
+        return sum(x for x in assignment_map.values() if x > 0)
 
 
 def solution_generator(solution, group_num):
@@ -171,21 +171,23 @@ def solution_generator(solution, group_num):
 
 
 def main():
-    with open("input3.txt") as f:
+    with open("input.txt") as f:
         file_lines = f.read()
         configuration = Configuration(file_lines)
-    minConflictSolver = MinConflictSolver()
+    min_conflict_solver = MinConflictSolver()
     for pot in configuration.pots.values():
-        minConflictSolver.add_variable(pot, range(0, configuration.group))
-        minConflictSolver.add_constraint(AllDifferentConstraint(), pot)
+        min_conflict_solver.add_variable(pot, range(0, configuration.group))
+        min_conflict_solver.add_constraint(AllDifferentConstraint(), pot)
     for team_name, teams in configuration.teams.iteritems():
         if team_name == 'UEFA':
-            minConflictSolver.add_constraint(AtMostTwoConstraint(), teams)
+            min_conflict_solver.add_constraint(AtMostTwoConstraint(), teams)
         else:
-            minConflictSolver.add_constraint(AllDifferentConstraint(), teams)
-    solution = minConflictSolver.get_solution()
-    with open("output3.txt", 'w') as the_file:
-        the_file.write(solution_generator(solution, configuration.group))
+            min_conflict_solver.add_constraint(AllDifferentConstraint(), teams)
+    solution = None
+    while solution is None:
+        solution = min_conflict_solver.get_solution()
+        with open("output.txt", 'w') as the_file:
+            the_file.write(solution_generator(solution, configuration.group))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,12 @@
+8
+4
+Uruguay,Morocco,Australia,Brazil,Sweden,Columbia
+Egypt,Spain,Peru,Croatia,Tunisia,Poland
+Saudi Arabia,Portugal,France,Argentina,Serbia
+Russia,Iran,Iceland,Switzerland,Sout Korea
+AFC:Tunisia
+CAF:Russia,Morocco,Brazil,Poland
+CONCACAF:Peru,Argentina,Switzerland,Sout Korea
+CONMEBOL:Portugal,Australia,Serbia
+OFC:Uruguay,Spain,Iceland
+UEFA:Saudi Arabia,Iran,France,Egypt,Croatia,Sweden,Columbia
