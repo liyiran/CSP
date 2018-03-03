@@ -331,41 +331,60 @@ UEFA:ONA,RXP,DXG,WQH,QIR,PZM,VLD,GZG,HYH,TFS,BHS,JJU,ONP,PBT,DRM,EDS,SQO,TGN,OOW
                 continue
 
     def test_auto(self):
-        configuration = Configuration(
-            '''10
-11
-28,10,35
-23,2,38,31,19
-25,12,33,18
-20,29,3,11,17
-9,16
-24,5,15
-4,8,32
-26,7,13,30
-21,1,14,36
-27,22,34
-0,6,37
-AFC:21,23,2,6,33,31,18
-CAF:22,28,9,15,30,36
-OFC:25,29,4,10,17,34
-CONCACAF:26,7,14,35
-CONMEBOL:27,3,11,16,37
-UEFA:24,20,1,0,5,8,38,13,12,32,19''')
-        minConflictSolver = MinConflictSolver()
-        for pot in configuration.pots.values():
-            minConflictSolver.add_variable(pot, range(0, configuration.group))
-            minConflictSolver.add_constraint(AllDifferentConstraint(), pot)
-        for team_name, teams in configuration.teams.iteritems():
-            if team_name == 'UEFA':
-                minConflictSolver.add_constraint(AtMostTwoConstraint(), teams)
+        for filename in os.listdir('auto_gen_config'):
+            start = int(round(time.time() * 1000))
+            if filename.endswith(".txt"):
+                with open("auto_gen_config/" + filename) as f:
+                    print("processing file: " + filename)
+                    file_lines = f.read()
+                    configuration = Configuration(file_lines)
+                    minConflictSolver = MinConflictSolver()
+                for pot in configuration.pots.values():
+                    minConflictSolver.add_variable(pot, range(0, configuration.group))
+                    minConflictSolver.add_constraint(AllDifferentConstraint(), pot)
+                for team_name, teams in configuration.teams.iteritems():
+                    if team_name == 'UEFA':
+                        minConflictSolver.add_constraint(AtMostTwoConstraint(), teams)
+                    else:
+                        minConflictSolver.add_constraint(AllDifferentConstraint(), teams)
+                solution = minConflictSolver.get_solution()
+                if solution is None:
+                    print(filename + ' NONE!!')
+                result_tester(configuration, solution)
+                with open("auto_gen_config/output_" + filename + '.out', 'w') as the_file:
+                    the_file.write(solution_generator(solution, configuration.group))
+                    the_file.write("\nreading, running, checking time: " + str(int(round(time.time() * 1000)) - start) + ' ms')
+                continue
             else:
-                minConflictSolver.add_constraint(AllDifferentConstraint(), teams)
-        solution = minConflictSolver.get_solution()
-        output = defaultdict(list)
-        if solution is not None:
-            for team_name, group in solution.iteritems():
-                output[group].append(team_name)
-        print(solution_generator(solution, configuration.group))
+                continue
+
+    def test_share(self):
+        for filename in os.listdir('share_case'):
+            start = int(round(time.time() * 1000))
+            if filename.endswith(".txt"):
+                with open("share_case/" + filename) as f:
+                    print("processing file: " + filename)
+                    file_lines = f.read()
+                    configuration = Configuration(file_lines)
+                    minConflictSolver = MinConflictSolver()
+                for pot in configuration.pots.values():
+                    minConflictSolver.add_variable(pot, range(0, configuration.group))
+                    minConflictSolver.add_constraint(AllDifferentConstraint(), pot)
+                for team_name, teams in configuration.teams.iteritems():
+                    if team_name == 'UEFA':
+                        minConflictSolver.add_constraint(AtMostTwoConstraint(), teams)
+                    else:
+                        minConflictSolver.add_constraint(AllDifferentConstraint(), teams)
+                solution = minConflictSolver.get_solution()
+                if solution is None:
+                    print(filename + ' NONE!!')
+                result_tester(configuration, solution)
+                with open("share_case/output_" + filename + '.out', 'w') as the_file:
+                    the_file.write(solution_generator(solution, configuration.group))
+                    the_file.write("\nreading, running, checking time: " + str(int(round(time.time() * 1000)) - start) + ' ms')
+                continue
+            else:
+                continue
 
 
 def result_tester(configuration, solution):
