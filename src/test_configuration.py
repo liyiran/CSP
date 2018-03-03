@@ -1,3 +1,5 @@
+import os
+import time
 from collections import defaultdict
 from unittest import TestCase
 
@@ -6,8 +8,7 @@ from hw2cs561s2018 import AllDifferentConstraint, AtMostTwoConstraint, Configura
 
 class TestConfiguration(TestCase):
     def test_configure(self):
-        configuration = Configuration(
-            '''3
+        config = '''3
 4
 Russia,Brazil,Argentina
 Germany,Italy,England
@@ -18,7 +19,8 @@ CAF:None
 OFC:None
 CONCACAF:USA,Mexico
 CONMEBOL:Brazil,Argentina
-UEFA:France,Germany,Italy,England,Russia''')
+UEFA:France,Germany,Italy,England,Russia'''
+        configuration = Configuration(config)
         self.assertEqual(configuration.group, 3)
         self.assertEqual(configuration.pot, 4)
         self.assertListEqual(configuration.pots[0], ['Russia', 'Brazil', 'Argentina'])
@@ -29,6 +31,7 @@ UEFA:France,Germany,Italy,England,Russia''')
         self.assertListEqual(list(configuration.teams.values())[1], ['USA', 'Mexico'])
         self.assertListEqual(list(configuration.teams.values())[0], ['Brazil', 'Argentina'])
         self.assertListEqual(list(configuration.teams.values())[2], ['France', 'Germany', 'Italy', 'England', 'Russia'])
+        self.assertEqual(config, configuration.__str__())
 
     def test_dump_none(self):
         solutions = {'team1': 1, 'team2': 2, 'team3': 3}
@@ -298,6 +301,71 @@ UEFA:ONA,RXP,DXG,WQH,QIR,PZM,VLD,GZG,HYH,TFS,BHS,JJU,ONP,PBT,DRM,EDS,SQO,TGN,OOW
                 output[group].append(team_name)
         print(solution_generator(solution, configuration.group))
         result_tester(configuration, solution)
+
+    def test_all_files(self):
+        for filename in os.listdir('jiang_core'):
+            start = int(round(time.time() * 1000))
+            if filename.endswith(".txt"):
+                with open("jiang_core/" + filename) as f:
+                    print("processing file: " + filename)
+                    file_lines = f.read()
+                    configuration = Configuration(file_lines)
+                    minConflictSolver = MinConflictSolver()
+                for pot in configuration.pots.values():
+                    minConflictSolver.add_variable(pot, range(0, configuration.group))
+                    minConflictSolver.add_constraint(AllDifferentConstraint(), pot)
+                for team_name, teams in configuration.teams.iteritems():
+                    if team_name == 'UEFA':
+                        minConflictSolver.add_constraint(AtMostTwoConstraint(), teams)
+                    else:
+                        minConflictSolver.add_constraint(AllDifferentConstraint(), teams)
+                solution = minConflictSolver.get_solution()
+                if solution is None:
+                    print(filename + ' NONE!!')
+                result_tester(configuration, solution)
+                with open("jiang_core/output_" + filename + '.out', 'w') as the_file:
+                    the_file.write(solution_generator(solution, configuration.group))
+                    the_file.write("\nreading, running, checking time: " + str(int(round(time.time() * 1000)) - start) + ' ms')
+                continue
+            else:
+                continue
+
+    def test_auto(self):
+        configuration = Configuration(
+            '''10
+11
+28,10,35
+23,2,38,31,19
+25,12,33,18
+20,29,3,11,17
+9,16
+24,5,15
+4,8,32
+26,7,13,30
+21,1,14,36
+27,22,34
+0,6,37
+AFC:21,23,2,6,33,31,18
+CAF:22,28,9,15,30,36
+OFC:25,29,4,10,17,34
+CONCACAF:26,7,14,35
+CONMEBOL:27,3,11,16,37
+UEFA:24,20,1,0,5,8,38,13,12,32,19''')
+        minConflictSolver = MinConflictSolver()
+        for pot in configuration.pots.values():
+            minConflictSolver.add_variable(pot, range(0, configuration.group))
+            minConflictSolver.add_constraint(AllDifferentConstraint(), pot)
+        for team_name, teams in configuration.teams.iteritems():
+            if team_name == 'UEFA':
+                minConflictSolver.add_constraint(AtMostTwoConstraint(), teams)
+            else:
+                minConflictSolver.add_constraint(AllDifferentConstraint(), teams)
+        solution = minConflictSolver.get_solution()
+        output = defaultdict(list)
+        if solution is not None:
+            for team_name, group in solution.iteritems():
+                output[group].append(team_name)
+        print(solution_generator(solution, configuration.group))
 
 
 def result_tester(configuration, solution):

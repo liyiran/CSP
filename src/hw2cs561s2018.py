@@ -5,20 +5,52 @@ from collections import defaultdict
 
 class Configuration:
     def __init__(self, conf):
-        configs = conf.splitlines()
-        self.group = int(configs[0])
-        self.pot = int(configs[1])
-        self.pots = {}
-        self.teams = {}
-        for pot_num in range(self.pot):
-            pot_division = configs[pot_num + 2].split(',')
-            self.pots[pot_num] = pot_division  # devisions Russia,Brazil,Argentina
-        for team in range(6):
-            team_name = configs[2 + self.pot + team].split(':')[0]
-            team_string = configs[2 + self.pot + team].split(':')[1]
-            one_team = team_string.split(',')
-            if not one_team[0] == 'None':
-                self.teams[team_name] = one_team
+        if conf:
+            configs = conf.splitlines()
+            self.group = int(configs[0])
+            self.pot = int(configs[1])
+            self.pots = {}
+            self.teams = {}
+            for pot_num in range(self.pot):
+                pot_division = configs[pot_num + 2].split(',')
+                self.pots[pot_num] = pot_division  # devisions Russia,Brazil,Argentina
+            for team in range(6):
+                team_name = configs[2 + self.pot + team].split(':')[0]
+                team_string = configs[2 + self.pot + team].split(':')[1]
+                one_team = team_string.split(',')
+                if not one_team[0] == 'None':
+                    self.teams[team_name] = one_team
+
+    def __str__(self):
+        none = ":None\n"
+        result = str(self.group) + '\n' + str(self.pot) + "\n"
+        for pot_number, pot in self.pots.iteritems():
+            result += ','.join(self.pots[pot_number]) + '\n'
+        if 'AFC' in self.teams:
+            result += 'AFC' + ':' + ','.join(self.teams['AFC']) + '\n'
+        else:
+            result += 'AFC' + none
+        if 'CAF' in self.teams:
+            result += 'CAF' + ':' + ','.join(self.teams['CAF']) + '\n'
+        else:
+            result += 'CAF' + none
+        if 'OFC' in self.teams:
+            result += 'OFC' + ':' + ','.join(self.teams['OFC']) + '\n'
+        else:
+            result += 'OFC' + none
+        if 'CONCACAF' in self.teams:
+            result += 'CONCACAF' + ':' + ','.join(self.teams['CONCACAF']) + '\n'
+        else:
+            result += 'CONCACAF' + none
+        if 'CONMEBOL' in self.teams:
+            result += 'CONMEBOL' + ':' + ','.join(self.teams['CONMEBOL']) + '\n'
+        else:
+            result += 'CONMEBOL' + none
+        if 'UEFA' in self.teams:
+            result += 'UEFA' + ':' + ','.join(self.teams['UEFA']) + '\n'
+        else:
+            result += 'UEFA' + none
+        return result.rstrip()
 
 
 class MinConflictSolver:
