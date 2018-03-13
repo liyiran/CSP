@@ -1,12 +1,13 @@
 import random
 from collections import defaultdict
 from random import randint
-from unittest import TestCase
+from unittest import TestCase, skip
 
 from hw2cs561s2018 import AllDifferentConstraint, Configuration, MinConflictSolver
 
 
 class case_generator(TestCase):
+    @skip('no need for now')
     def test_case_generator(self):
         # print(self.generate_groups())
         for i in range(187, 500):

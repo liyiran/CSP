@@ -1,7 +1,7 @@
 import os
 import time
 from collections import defaultdict
-from unittest import TestCase
+from unittest import TestCase, skip
 
 from hw2cs561s2018 import AllDifferentConstraint, AtMostTwoConstraint, Configuration, MinConflictSolver, solution_generator
 
@@ -302,6 +302,7 @@ UEFA:ONA,RXP,DXG,WQH,QIR,PZM,VLD,GZG,HYH,TFS,BHS,JJU,ONP,PBT,DRM,EDS,SQO,TGN,OOW
         print(solution_generator(solution, configuration.group))
         result_tester(configuration, solution)
 
+    @skip('No need for now')
     def test_all_files(self):
         for filename in os.listdir('jiang_core'):
             start = int(round(time.time() * 1000))
@@ -330,6 +331,7 @@ UEFA:ONA,RXP,DXG,WQH,QIR,PZM,VLD,GZG,HYH,TFS,BHS,JJU,ONP,PBT,DRM,EDS,SQO,TGN,OOW
             else:
                 continue
 
+    @skip('no need for now')
     def test_auto(self):
         for filename in os.listdir('auto_gen_config'):
             start = int(round(time.time() * 1000))
@@ -358,6 +360,7 @@ UEFA:ONA,RXP,DXG,WQH,QIR,PZM,VLD,GZG,HYH,TFS,BHS,JJU,ONP,PBT,DRM,EDS,SQO,TGN,OOW
             else:
                 continue
 
+    @skip('no need for now')
     def test_share(self):
         for filename in os.listdir('share_case'):
             start = int(round(time.time() * 1000))
