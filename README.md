@@ -14,7 +14,7 @@ python 2.0
 
 
 ## Running the tests
-
+[![Build Status](https://travis-ci.org/liyiran/hw2.svg?branch=master)](https://travis-ci.org/liyiran/hw2)
 This project is using TDD development and there are 4 unit test classes
 
 ## Authors
